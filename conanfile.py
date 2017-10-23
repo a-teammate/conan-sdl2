@@ -76,7 +76,7 @@ class SDLConan(ConanFile):
             self.run("chmod a+x %s/build-scripts/gcc-fat.sh" % self.folder)
             configure_command = 'cd %s && CC=$(pwd)/build-scripts/gcc-fat.sh && %s ./configure %s' % (self.folder, env_line, suffix)
         else:
-            configure_command = 'cd %s && %s ./configure %s %s' % (self.folder, env_line, suffix, with_fpic)
+            configure_command = 'cd %s && %s ./configure %s %s --enable-mir-shared=no' % (self.folder, env_line, suffix, with_fpic)
         self.output.warn("Configure with: %s" % configure_command)
         self.run(configure_command)
         self.run("cd %s && %s make %s" % (self.folder, env_line, suffix))
