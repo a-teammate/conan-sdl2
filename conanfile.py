@@ -88,7 +88,7 @@ class SDLConan(ConanFile):
         static_run = "-DSDL_SHARED_ENABLED_BY_DEFAULT=%s" % ("ON" if self.options.shared else "OFF")
         static_run += " -DSDL_STATIC=%s" % ("OFF" if self.options.shared else "ON")
         self.run("cd %s &&  mkdir _build" % self.folder)
-        configure_command = 'cd %s/_build && cmake .. %s %s %s -DLIBC=OFF' % (self.folder, cmake.command_line, directx_def, static_run)
+        configure_command = 'cd %s/_build && cmake .. %s %s %s -DLIBC=ON' % (self.folder, cmake.command_line, directx_def, static_run)
         self.output.warn("Configure with: %s" % configure_command)
         self.run(configure_command)
         self.run("cd %s/_build && cmake --build . %s" % (self.folder, cmake.build_config))
