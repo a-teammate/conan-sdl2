@@ -15,7 +15,7 @@ class SDLConan(ConanFile):
     exports = "CMakeLists.txt"
     generators = "cmake"
     url="http://github.com/lasote/conan-sdl2"
-    requires = "zlib/1.2.8@lasote/stable"
+    requires = "zlib/1.2.11@lasote/stable"
     license="zlib license: https://www.libsdl.org/license.php "
     build_policy="missing"
     
