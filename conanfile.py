@@ -1,8 +1,7 @@
-from conans import ConanFile
+from conans import ConanFile, tools
 from conans.tools import download, unzip, replace_in_file
 import shutil
-from conans import CMake, ConfigureEnvironment
-
+from conans import CMake, AutoToolsBuildEnvironment
 
 class SDLConan(ConanFile):
     name = "SDL2"
@@ -52,35 +51,23 @@ class SDLConan(ConanFile):
             self.build_with_make()
 
     def build_with_make(self):
-
         self.run("cd %s" % self.folder)
         self.run("chmod a+x %s/configure" % self.folder)
-
-        suffix = ""
-        with_fpic = ""
-        if self.settings.arch == "x86":
-            suffix = 'CFLAGS="-m32" LDFLAGS="-m32"'  # not working the env, dont know why
-
-        env = ConfigureEnvironment(self.deps_cpp_info, self.settings)
-        if self.options.fPIC:
-            env_line = env.command_line.replace('CFLAGS="', 'CFLAGS="-fPIC ')
-            with_fpic += " --with-pic"
-        else:
-            env_line = env.command_line
-
-        env_line = env_line.replace('LIBS="', 'LIBS2="')  # Rare error if LIBS is kept
-
-        if self.settings.os == "Macos":  # Fix rpath, we want empty rpaths, just pointing to lib file
+        if self.settings.os == "Macos": # Fix rpath, we want empty rpaths, just pointing to lib file
             old_str = "-install_name \$rpath/"
             new_str = "-install_name "
             replace_in_file("%s/configure" % self.folder, old_str, new_str)
             self.run("chmod a+x %s/build-scripts/gcc-fat.sh" % self.folder)
-            configure_command = 'cd %s && CC=$(pwd)/build-scripts/gcc-fat.sh && %s ./configure %s' % (self.folder, env_line, suffix)
-        else:
-            configure_command = 'cd %s && %s ./configure %s %s' % (self.folder, env_line, suffix, with_fpic)
-        self.output.warn("Configure with: %s" % configure_command)
-        self.run(configure_command)
-        self.run("cd %s && %s make %s" % (self.folder, env_line, suffix))
+
+        env = AutoToolsBuildEnvironment(self)
+        if self.options.fPIC:
+            env.fpic = True
+        vars = env.vars
+        if self.settings.os == "Macos":
+            vars["CC"] = "{}/build-scripts/gcc-fat.sh".format(self.folder)
+        with tools.environment_append(vars):
+            self.run('cd %s && ./configure' % (self.folder))
+            self.run("cd %s && make" % (self.folder))
 
     def build_with_cmake(self):
         cmake = CMake(self)
@@ -89,7 +76,7 @@ class SDLConan(ConanFile):
         static_run = "-DSDL_SHARED_ENABLED_BY_DEFAULT=%s" % ("ON" if self.options.shared else "OFF")
         static_run += " -DSDL_STATIC=%s" % ("OFF" if self.options.shared else "ON")
         self.run("cd %s &&  mkdir _build" % self.folder)
-        configure_command = 'cd %s/_build && cmake .. %s %s %s -DLIBC=OFF' % (self.folder, cmake.command_line, directx_def, static_run)
+        configure_command = 'cd %s/_build && cmake .. %s %s %s -DLIBC=ON' % (self.folder, cmake.command_line, directx_def, static_run)
         self.output.warn("Configure with: %s" % configure_command)
         self.run(configure_command)
         self.run("cd %s/_build && cmake --build . %s" % (self.folder, cmake.build_config))
