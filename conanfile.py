@@ -1,6 +1,6 @@
 from conans import ConanFile, tools
 from conans.tools import download, unzip, replace_in_file
-import shutil
+import shutil, os
 from conans import CMake, AutoToolsBuildEnvironment
 
 class SDLConan(ConanFile):
@@ -108,6 +108,7 @@ class SDLConan(ConanFile):
 
         self.cpp_info.includedirs += ["include/SDL2"]
         self.cpp_info.libs = ["SDL2"]
+        self.env_info.SDL2_CONFIG = os.path.join(self.package_folder, "lib")
 
         if self.settings.os == "Windows":
             self.cpp_info.libs.append("OpenGL32")
