@@ -66,7 +66,7 @@ class SDLConan(ConanFile):
         if self.settings.os == "Macos":
             vars["CC"] = "{}/build-scripts/gcc-fat.sh".format(self.folder)
         with tools.environment_append(vars):
-            self.run('cd %s && ./configure' % (self.folder))
+            self.run('cd %s && ./configure --enable-mir-shared=no' % (self.folder))
             self.run("cd %s && make" % (self.folder))
 
     def build_with_cmake(self):
